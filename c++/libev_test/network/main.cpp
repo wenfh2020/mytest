@@ -103,7 +103,7 @@ void timeout_cb(struct ev_loop* loop, ev_timer* w, int revents) {
     //get client fd and then close it.
     struct client_info* pClientInfo = (struct client_info*)w->data;
     printf("close fd = %d\n", pClientInfo->fd);
-    //close(pClientInfo->fd);
+    close(pClientInfo->fd);
     //
     //shutdown(pClientInfo->fd, SHUT_RDWR);
     //

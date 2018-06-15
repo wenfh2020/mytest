@@ -49,7 +49,7 @@ flags = [
 '-isystem',
 '/usr/local/include',
 '-isystem',
-'./l3oss/include',
+'../l3oss/src',
 ]
 
 
