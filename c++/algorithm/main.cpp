@@ -1,39 +1,37 @@
+/* wenfahua - 2018-07-27 - sort code. */
 #include <stdio.h>
 #include <string.h>
 
-//http://www.algolist.net/Algorithms/Sorting/Quicksort
-//快速排序
-void QuickSort(int szArray[], int iLeft, int iRight) {
-    int iEnd = iRight;
-    int iBegin = iLeft;
-    int iFlag = szArray[(iLeft + iRight) / 2];
+//www.algolist.net/Algorithms/Sorting/Quicksort
+void QuickSort(int szArray[], int iBegin, int iEnd) {
+    int iRight = iEnd;
+    int iLeft = iBegin;
+    int iFlag = szArray[(iBegin + iEnd) / 2];
 
-    /* partition */
-    while (iBegin <= iEnd) {
-        while (szArray[iBegin] < iFlag) {
-            iBegin++;
+    while (iLeft <= iRight) {
+        while (szArray[iLeft] < iFlag && iLeft < iEnd) {
+            iLeft++;
         }
 
-        while (szArray[iEnd] > iFlag) {
-            iEnd--;
+        while (szArray[iRight] > iFlag && iRight > iBegin) {
+            iRight--;
         }
 
-        if (iBegin <= iEnd) {
-            int iTemp = szArray[iBegin];
-            szArray[iBegin] = szArray[iEnd];
-            szArray[iEnd] = iTemp;
-            iBegin++;
-            iEnd--;
+        if (iLeft <= iRight) {
+            int iTemp = szArray[iLeft];
+            szArray[iLeft] = szArray[iRight];
+            szArray[iRight] = iTemp;
+            iLeft++;
+            iRight--;
         }
     };
 
-    /* recursion */
-    if (iLeft < iEnd) {
-        QuickSort(szArray, iLeft, iEnd);
-    }
-
     if (iBegin < iRight) {
         QuickSort(szArray, iBegin, iRight);
+    }
+
+    if (iLeft < iEnd) {
+        QuickSort(szArray, iLeft, iEnd);
     }
 }
 
@@ -53,4 +51,3 @@ int main() {
     PrintArray(szArray, ulSize);
     return 0;
 }
-//二分法查找
