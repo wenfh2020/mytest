@@ -9,11 +9,10 @@ import (
 )
 
 const (
-	WAIT_TIME  = 100 //second
-	TIME_FOMAT = "2006-01-02 15:04:05.000"
-	REDIS_ADDR = "127.0.0.1:6379"
-	//	MESSAGE_KEY = "redislist"
-	MESSAGE_KEY = "5:12001:2:4"
+	WAIT_TIME   = 1 //second
+	TIME_FOMAT  = "2006-01-02 15:04:05.000"
+	REDIS_ADDR  = "127.0.0.1:6379"
+	MESSAGE_KEY = "redislist"
 )
 
 type ReqNoticeFriend struct {
@@ -32,7 +31,7 @@ func logic(p *Proto) (err error) {
 		return
 	}
 
-	fmt.Println("[", time.Now().Format(TIME_FOMAT), "]", oReq, oReq.DataVer)
+	//fmt.Println("[", time.Now().Format(TIME_FOMAT), "]", oReq, oReq.DataVer)
 	return
 }
 
@@ -44,17 +43,33 @@ func Custom() {
 	}
 
 	defer c.Close()
+	bStart := false
+	iMessagesCount := 0
+	oOldTime := time.Now()
 
 	for {
 		vals, err := redis.Values(c.Do("brpop", MESSAGE_KEY, WAIT_TIME))
 		if err != nil {
-			fmt.Println("brpop failed:", err)
+			if bStart {
+				fmt.Println("end time:", time.Now().Format(TIME_FOMAT))
+				fmt.Println("custom message:", iMessagesCount)
+				fmt.Println("avg:", iMessagesCount/int(time.Now().Sub(oOldTime).Seconds()))
+				bStart = false
+			}
+			time.Sleep(3 * time.Second)
 			continue
+		}
+
+		if !bStart {
+			oOldTime := time.Now()
+			fmt.Println("begin time:", oOldTime.Format(TIME_FOMAT))
+			bStart = true
 		}
 
 		for i, v := range vals {
 			if i != 0 {
-				fmt.Println(string(v.([]byte)))
+				iMessagesCount = iMessagesCount + 1
+				//fmt.Println(string(v.([]byte)))
 				p := new(Proto)
 				if err = UnPack(v.([]byte), p); err != nil {
 					fmt.Println("unpacket failed!")

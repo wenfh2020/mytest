@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	MESSAGE_NUM = 100000                    //测试的消息数量
+	MESSAGE_NUM = 1000000                   //测试的消息数量
 	TIME_FOMAT  = "2006-01-02 15:04:05.000" //打印时间格式
 	REDIS_ADDR  = "127.0.0.1:6379"          //redis 的ip地址和端口
 	MAX_GO_CHAN = 10000                     //根据硬件的配置设置最大并发个数
@@ -33,25 +33,6 @@ func Count(ch chan int) {
 }
 
 func main() {
-	/*
-		chs := make([]chan int, 10)
-
-		fmt.Println("main len", len(chs))
-
-		for i := 0; i < 10; i++ {
-			chs[i] = make(chan int, 10)
-			go Count(chs[i])
-		}
-
-		//fmt.Println(chs)
-
-		for _, ch := range chs {
-			<-ch
-			//fmt.Println("result", ch)
-		}
-
-		return
-	*/
 	InitRedis(REDIS_ADDR)
 	chMaxGo = make(chan int, MAX_GO_CHAN)
 
