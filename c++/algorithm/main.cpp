@@ -12,7 +12,7 @@ void PrintArray(int szArray[], int iBegin, int iEnd) {
 void QuickSort(int szArray[], int iBegin, int iEnd) {
     int iRight = iEnd;
     int iLeft = iBegin;
-    int iMidValue = szArray[(iBegin + iEnd) / 2];
+    int iMidValue = szArray[(unsigned int)(iBegin + iEnd) / 2];
 
     while (iLeft <= iRight) {
         while (szArray[iLeft] < iMidValue && iLeft < iEnd) {
