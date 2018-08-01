@@ -45,11 +45,15 @@ void QuickSort(int szArray[], int iBegin, int iEnd) {
 }
 
 int BinarySearch(int szArray[], int iSize, int iFindValue) {
+    if (iSize <= 0) {
+        return -1;
+    }
+
     int iLeft = 0;
     int iRight = iSize - 1;
 
     while (iLeft <= iRight) {
-        int iMid = (iLeft + iRight) / 2;
+        int iMid = ((unsigned int)(iLeft + iRight)) / 2; //《代码之美》说，left + right 有可能超出 int 是个负数~
         if (iFindValue > szArray[iMid]) {
             iLeft = iMid + 1;
         } else if (iFindValue < szArray[iMid]) {
@@ -63,13 +67,13 @@ int BinarySearch(int szArray[], int iSize, int iFindValue) {
 }
 
 int main() {
-    int szArray[10] = {10, 9, 8, 11, 6, 5, 10, 12, 1, 2};
+    int szArray[11] = {10, 9, 8, 11, 6, 5, 10, 12, 1, 2, -1};
     PrintArray(szArray, 0, sizeof(szArray) / sizeof(int) - 1);
     QuickSort(szArray, 0, sizeof(szArray) / sizeof(int) - 1);
     PrintArray(szArray, 0, sizeof(szArray) / sizeof(int) - 1);
 
-    int iFindValue = 12;
-    printf("binary search(%d) result %d",
+    int iFindValue = -1;
+    printf("binary search(%d) result %d\n",
            iFindValue, BinarySearch(szArray, sizeof(szArray) / sizeof(int), iFindValue));
     return 0;
 }
