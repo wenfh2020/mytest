@@ -53,7 +53,7 @@ int BinarySearch(int szArray[], int iSize, int iFindValue) {
     int iRight = iSize - 1;
 
     while (iLeft <= iRight) {
-        int iMid = ((unsigned int)(iLeft + iRight)) / 2; //《代码之美》说，left + right 有可能超出 int 是个负数~
+        int iMid = ((unsigned int)(iLeft + iRight)) / 2; //int + int maybe < 0.
         if (iFindValue > szArray[iMid]) {
             iLeft = iMid + 1;
         } else if (iFindValue < szArray[iMid]) {
