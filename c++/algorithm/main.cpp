@@ -30,7 +30,7 @@ void QuickSort(int szArray[], int iBegin, int iEnd) {
             iLeft++;
             iRight--;
         }
-    };
+    }
 
     printf("mid value = %.2d -- ", iMidValue);
     PrintArray(szArray, iBegin, iEnd);
