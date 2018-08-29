@@ -17,12 +17,15 @@
 #include <fcntl.h>
 
 #define PORT 8333
+#define IP   "127.0.0.1"
 #define MAX_EVENT 20
 
 int InitListenSocket();
 int SetSocketNoBlocking(int iFd);
 int EpollRun(int iListenFd);
 int EpollAddEvent(int iEpollFd, int iFd);
+int EpollModEvent(int iEpollFd, int iFd, int iEvent);
+int EpollDelEvent(int iEpollFd, int iFd);
 
 int main() {
     int iFd = InitListenSocket();
@@ -37,10 +40,7 @@ int main() {
 }
 
 int SetSocketNoBlocking(int iFd) {
-    int iOldOperation = fcntl(iFd, F_GETFL);
-    int iNewOperation = iOldOperation|O_NONBLOCK;
-    fcntl(iFd, F_SETFL, iNewOperation);
-    return iOldOperation;
+    return fcntl(iFd, F_SETFL, fcntl(iFd, F_GETFL) | O_NONBLOCK);
 }
 
 int EpollAddEvent(int iEpollFd, int iFd) {
@@ -48,7 +48,7 @@ int EpollAddEvent(int iEpollFd, int iFd) {
 
     epoll_event tEvent;
     tEvent.data.fd = iFd;
-    tEvent.events = EPOLLIN|EPOLLET;
+    tEvent.events = EPOLLIN | EPOLLET;
     if (epoll_ctl(iEpollFd, EPOLL_CTL_ADD, iFd, &tEvent) < 0) {
         printf("ctl add epfd failed! error: %d\n", errno);
         return -1;
@@ -58,6 +58,33 @@ int EpollAddEvent(int iEpollFd, int iFd) {
     return 0;
 }
 
+int EpollModEvent(int iEpollFd, int iFd, int iEvent) {
+    printf("epoll mod event, epoll fd: %d, socket fd: %d, event: %d\n", iEpollFd, iFd, iEvent);
+
+    epoll_event tEvent;
+    tEvent.data.fd = iFd;
+    tEvent.events = EPOLLET | iEvent;
+    if (epoll_ctl(iEpollFd, EPOLL_CTL_MOD, iFd, &tEvent) < 0) {
+        printf("ctl mod epfd failed! error: %d\n", errno);
+        return -1;
+
+    }
+
+    SetSocketNoBlocking(iFd);
+    return 0;
+}
+
+int EpollDelEvent(int iEpollFd, int iFd) {
+    printf("epoll delete event! epoll fd = %d, socket fd = %d\n", iEpollFd, iFd);
+    return epoll_ctl(iEpollFd, EPOLL_CTL_DEL, iFd, 0);
+}
+
+void CloseConn(int iEpollFd, int iFd) {
+    printf("close socket, fd = %d\n", iFd);
+    EpollDelEvent(iEpollFd, iFd);
+    close(iFd);
+}
+
 int InitListenSocket() {
     printf("init listen sockt, port: %d\n", PORT);
 
@@ -65,7 +92,7 @@ int InitListenSocket() {
     bzero(&tAddr, sizeof(tAddr));
     tAddr.sin_family = AF_INET;
     tAddr.sin_port = htons(PORT);
-    tAddr.sin_addr.s_addr = INADDR_ANY;
+    tAddr.sin_addr.s_addr = inet_addr(IP);
 
     int iFd = socket(AF_INET, SOCK_STREAM, 0);
     if (iFd < 0) {
@@ -93,7 +120,7 @@ int InitListenSocket() {
 int EpollRun(int iListenFd) {
     printf("epoll run...\n");
 
-    int iEpollFd = epoll_create(256);
+    int iEpollFd = epoll_create(64);
     if (iEpollFd < 0) {
         printf("create epoll fd failed! error: %d\n", errno);
         return -1;
@@ -105,18 +132,21 @@ int EpollRun(int iListenFd) {
         return -1;
     }
 
-    epoll_event tEvent, arrEvents[MAX_EVENT];
+    epoll_event arrEvents[MAX_EVENT];
 
     for (;;) {
         int iEvents = epoll_wait(iEpollFd, arrEvents, MAX_EVENT, 500);
-        for (int i=0; i < iEvents; i++) {
-            //accept new client connect.
-            if (arrEvents[i].data.fd == iListenFd) {
-                printf("-accept...\n");
+        for (int i = 0; i < iEvents; i++) {
+            int iEvents = arrEvents[i].events;
+            int iFd = arrEvents[i].data.fd;
+            if (iFd < 0) {
+                continue;
+            }
 
+            //accept new connect.
+            if (iFd == iListenFd) {
                 socklen_t uiSocktLen = 0;
                 struct sockaddr_in tClientAddr;
-
                 int iConnFd = accept(iListenFd, (struct sockaddr*)&tClientAddr, &uiSocktLen);
                 if (iConnFd < 0) {
                     printf("accept failed! error: %d\n", errno);
@@ -129,43 +159,31 @@ int EpollRun(int iListenFd) {
                     printf("add event failed! client fd: %d, error:%d\n", iConnFd, errno);
                     continue;
                 }
-            } else if (arrEvents[i].events & EPOLLIN) {
-                printf("-recv client data.\n");
-
-                int iFd = arrEvents[i].data.fd;
-                if (iFd < 0) {
-                    continue;
-                }
-
+            } else if (iEvents & EPOLLIN) {
                 char szBuffer[1024] = {0};
                 int iRecvLen = recv(iFd, szBuffer, sizeof(szBuffer), 0);
                 if (iRecvLen < 0) {
-                    printf("recv data failed! error: %d, fd: %d\n", errno, iFd);
-                    if (errno == ECONNRESET) {
-                        close(iFd);
-                        arrEvents[i].data.fd = -1;
+                    printf("recv data len < 0! error: %d, fd: %d\n", errno, iFd);
+                    if (errno == EAGAIN || errno == EINTR) {
+                        printf("read later, fd: %d!\n", iFd);
+                        continue;
+                    } else {
+                        CloseConn(iEpollFd, iFd);
                     }
                 } else if (0 == iRecvLen) {
                     printf("client close connect. fd: %d\n", iFd);
-                    close(iFd);
-                    arrEvents[i].data.fd = -1;
+                    CloseConn(iEpollFd, iFd);
                 } else {
                     printf("recv data: %s\n", szBuffer);
-
-                    tEvent.data.fd = iFd;
-                    tEvent.events = EPOLLOUT|EPOLLET;
-                    epoll_ctl(iEpollFd, EPOLL_CTL_MOD, iFd, &tEvent);
+                    EpollModEvent(iEpollFd, iFd, EPOLLOUT);
                 }
-            } else if (arrEvents[i].events & EPOLLOUT) {
-                printf("-send client data\n");
-
-                char szBuffer[1024] = {"123test\n"};
+            } else if (iEvents & EPOLLOUT) {
                 int iFd = arrEvents[i].data.fd;
+                char szBuffer[256] = {"123test\n"};
+                printf("send client data: %s\n", szBuffer);
                 send(iFd, szBuffer, strlen(szBuffer), 0);
 
-                tEvent.data.fd = iFd;
-                tEvent.events = EPOLLIN|EPOLLET;
-                epoll_ctl(iEpollFd, EPOLL_CTL_MOD, iFd, &tEvent);
+                EpollModEvent(iEpollFd, iFd, EPOLLIN);
             }
         }
     }
