@@ -16,6 +16,7 @@
 #include<string.h>
 #include<arpa/inet.h>
 
+//./main ip port
 int main(int iArgs, char** ppArgv) {
     if (iArgs != 3) {
         printf("invalid arg!\n");
@@ -27,7 +28,7 @@ int main(int iArgs, char** ppArgv) {
 
     int iSockFd = socket(AF_INET, SOCK_STREAM, 0);
     if (-1 == iSockFd) {
-        fprintf(stderr, "Socket Error is %s\n", strerror(errno));
+        printf("socket error = %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
 

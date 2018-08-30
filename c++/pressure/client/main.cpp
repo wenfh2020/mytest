@@ -1,5 +1,6 @@
 /* wfh - 2018/8/28
  * epoll for multi clients to pressure.
+ * tcpdump -i lo port 8333
  */
 
 #include <stdio.h>
@@ -16,6 +17,9 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
+#define ASYNC_CONNECT  1
+#define TEST_SEND_DATA "test1234567"
+
 int SetSocketNoBlock(int iFd) {
     return fcntl(iFd, F_SETFL, fcntl(iFd, F_GETFL) | O_NONBLOCK);
 }
@@ -25,7 +29,7 @@ int EpollAddEvent(int iEpollFd, int iFd) {
 
     epoll_event tEvent;
     tEvent.data.fd = iFd;
-    tEvent.events = EPOLLIN | EPOLLET;
+    tEvent.events = EPOLLIN | EPOLLET | EPOLLOUT;
     if (epoll_ctl(iEpollFd, EPOLL_CTL_ADD, iFd, &tEvent) < 0) {
         printf("epoll %d ctrl add fd %d failed!\n", iEpollFd, iFd);
         return -1;
@@ -106,11 +110,10 @@ void StartConn(int iEpollFd, int iNum, const char* pIP, int iPort) {
     bzero(&tAddr, sizeof(tAddr));
     tAddr.sin_family = AF_INET;
     tAddr.sin_port = htons(iPort);
-    //tAddr.sin_addr.s_addr = inet_addr(pIP);
     inet_pton(AF_INET, pIP, &tAddr.sin_addr.s_addr);
 
     for (int i = 0; i < iNum; i++) {
-        sleep(1);
+        usleep(10 * 1000);
 
         int iFd = socket(PF_INET, SOCK_STREAM, 0);
         if (iFd < 0) {
@@ -119,15 +122,17 @@ void StartConn(int iEpollFd, int iNum, const char* pIP, int iPort) {
         }
         printf("create socket success, fd = %d\n", iFd);
 
+#ifdef ASYNC_CONNECT
+        EpollAddEvent(iEpollFd, iFd);
+        connect(iFd, (struct sockaddr*)&tAddr, sizeof(tAddr));
+#else
         if (connect(iFd, (struct sockaddr*)&tAddr, sizeof(tAddr)) < 0) {
             printf("connect addr faild! \n");
             continue;
         }
-
         printf("create connect success, fd = %d!\n", iFd);
-        EpollAddEvent(iEpollFd, iFd);
-
-        WriteData(iFd, "123", strlen("123"));
+        WriteData(iFd, TEST_SEND_DATA, strlen(TEST_SEND_DATA));
+#endif
     }
 }
 
@@ -146,7 +151,8 @@ int EpollRun(int iConns, const char* pIP, int iPort) {
     while (1) {
         int iEventCount = epoll_wait(iEpollFd, arrEvents, 10000, 2000);
         for (int i = 0; i < iEventCount; i++) {
-            sleep(1);
+            usleep(10 * 1000);
+
             int iFd = arrEvents[i].data.fd;
             int iEvents = arrEvents[i].events;
             if (iFd < 0) {
@@ -158,17 +164,20 @@ int EpollRun(int iConns, const char* pIP, int iPort) {
                 printf("read data from EPOLLIN\n");
                 if (!ReadData(iFd, szBuffer, sizeof(szBuffer) - 1)) {
                     CloseConn(iEpollFd, iFd);
+                    continue;
                 }
                 EpollModEvent(iEpollFd, iFd, EPOLLOUT);
             } else if (iEvents & EPOLLOUT) {
                 printf("read data from EPOLLOUT\n");
-                if (WriteData(iFd, "123", strlen("123")) < 0) {
+                if (WriteData(iFd, TEST_SEND_DATA, strlen(TEST_SEND_DATA)) < 0) {
                     CloseConn(iEpollFd, iFd);
+                    continue;
                 }
                 EpollModEvent(iEpollFd, iFd, EPOLLIN);
             } else if (iEvents & EPOLLERR) {
                 printf("read data from EPOLLERR\n");
                 CloseConn(iEpollFd, iFd);
+                continue;
             }
         }
     }
