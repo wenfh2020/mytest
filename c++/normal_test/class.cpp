@@ -1,4 +1,6 @@
 #include "class.h"
+#include<unistd.h>
+#include<sys/types.h>
 
 void CTest::TestVirtual() {
     printf("test virtual function!\n");
@@ -39,4 +41,22 @@ void CTest::TestPointer() {
     //p[1] = 't'; //build failed
     //p2[1] = 't'; //build failed
     p3[1] = 't';
+}
+
+void CTest::TestFork() {
+    printf("test fork!\n");
+
+    printf("begin fork\n");
+    pid_t iPid = fork(); //fork return twice, so..
+    if (0 == iPid) {
+        //child
+        printf("fork child!\n");
+    } else if (iPid > 0) {
+        //parent
+        printf("fork parent!\n");
+    } else {
+        printf("fork failed!\n");
+        return;
+    }
+    printf("after fork\n");
 }

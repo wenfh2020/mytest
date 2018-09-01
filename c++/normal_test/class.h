@@ -81,6 +81,7 @@ public:
 public:
     void TestVirtual();
     void TestPointer();
+    void TestFork();
 };
 
 #endif

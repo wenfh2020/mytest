@@ -15,7 +15,8 @@ void PrintArgs(int iArgs, char** ppArgv) {
 
 void Help() {
     const char* pInfo = "-virtual\n"\
-                        "-pointer\n";
+                        "-pointer\n"\
+                        "-fork\n";
     printf("%s", pInfo);
 }
 
@@ -35,6 +36,8 @@ int main(int args, char** argv) {
         oTest.TestVirtual();
     } else if (strArgv == "pointer") {
         oTest.TestPointer();
+    } else if (strArgv == "fork") {
+        oTest.TestFork();
     } else {
         printf("invalid arg! please ./exe help for arg!\n");
     }
