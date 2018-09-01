@@ -73,13 +73,14 @@ public:
     }
 };
 
-class CClass {
+class CTest {
 public:
-    CClass() {}
-    virtual ~CClass() {}
+    CTest() {}
+    virtual ~CTest() {}
 
 public:
     void TestVirtual();
+    void TestPointer();
 };
 
 #endif

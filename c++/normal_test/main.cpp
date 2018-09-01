@@ -1,3 +1,6 @@
+/* wfh - 2018/09/01
+ * c/c++ test code.
+ * */
 #include <stdio.h>
 #include <iostream>
 #include <string.h>
@@ -10,34 +13,31 @@ void PrintArgs(int iArgs, char** ppArgv) {
     }
 }
 
-void help() {
-    const char* pInfo = "a - \n"\
-                        "b - \n";
+void Help() {
+    const char* pInfo = "-virtual\n"\
+                        "-pointer\n";
     printf("%s", pInfo);
 }
 
 int main(int args, char** argv) {
     //PrintArgs(args, argv);
-    if (args < 2 || args > 3) {
+    if (args != 2) {
+        printf("please input arg!\n");
         return 0;
     }
 
-    std::string strArgv1(argv[1]), strArgv2;
-    if (2 == args) {
-        if (strArgv1 == "help") {
-            help();
-            return 0;
-        }
-        return 0;
+    CTest oTest;
+    std::string strArgv(argv[1]);
+
+    if (strArgv.find("help") != std::string::npos) {
+        Help();
+    } else if (strArgv == "virtual") {
+        oTest.TestVirtual();
+    } else if (strArgv == "pointer") {
+        oTest.TestPointer();
+    } else {
+        printf("invalid arg! please ./exe help for arg!\n");
     }
 
-    strArgv2 = argv[2];
-    if (strArgv1 == "a") {
-    } else if (strArgv1 == "b") {
-        CClass oClass;
-        if (strArgv2 == "construct") {
-            oClass.TestVirtual();
-        }
-    }
     return 0;
 }
