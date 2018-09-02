@@ -1,7 +1,7 @@
 #include "class.h"
 #include<unistd.h>
 #include<sys/types.h>
-
+#include <stdlib.h>
 void CTest::TestVirtual() {
     printf("test virtual function!\n");
     printf("sizeof empty class %lu\n", sizeof(CEmpty));
@@ -50,13 +50,46 @@ void CTest::TestFork() {
     pid_t iPid = fork(); //fork return twice, so..
     if (0 == iPid) {
         //child
-        printf("fork child!\n");
+        printf("fork child! pid = %d\n", getpid());
     } else if (iPid > 0) {
         //parent
-        printf("fork parent!\n");
+        printf("fork parent! pid = %d\n", getpid());
     } else {
         printf("fork failed!\n");
         return;
     }
     printf("after fork\n");
+}
+
+void CTest::TestListReverse() {
+    printf("test list reverse!\n");
+
+    TList oList;
+    TListNode* pNodeTemp = NULL;
+    TListNode* pNodeTemp2 = NULL;
+
+    //add items
+    for (int i = 0; i < 10; i++) {
+        pNodeTemp = (TListNode*)malloc(sizeof(TListNode));
+        pNodeTemp->iData = i;
+        pNodeTemp->pNext = NULL;
+        oList.AddTail(pNodeTemp);
+    }
+
+    //print items
+    oList.PrintList();
+
+    //reverse
+    oList.Reverse();
+
+    //print items
+    oList.PrintList();
+
+    //free data.
+    pNodeTemp = oList.GetHead();
+    while (pNodeTemp != NULL) {
+        pNodeTemp2 = pNodeTemp->pNext;
+        free(pNodeTemp);
+        pNodeTemp = pNodeTemp2;
+    }
 }

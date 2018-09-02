@@ -38,6 +38,8 @@ int main(int args, char** argv) {
         oTest.TestPointer();
     } else if (strArgv == "fork") {
         oTest.TestFork();
+    } else if (strArgv == "list") {
+        oTest.TestListReverse();
     } else {
         printf("invalid arg! please ./exe help for arg!\n");
     }

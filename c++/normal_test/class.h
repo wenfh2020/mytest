@@ -2,6 +2,7 @@
 #define _CLASS_
 
 #include <stdio.h>
+#include "tlist.h"
 
 class CEmpty {
 };
@@ -82,6 +83,7 @@ public:
     void TestVirtual();
     void TestPointer();
     void TestFork();
+    void TestListReverse();
 };
 
 #endif
