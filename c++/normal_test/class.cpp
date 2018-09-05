@@ -93,3 +93,56 @@ void CTest::TestListReverse() {
         pNodeTemp = pNodeTemp2;
     }
 }
+
+void CTest::TestByteAlign() {
+    typedef struct B {
+        char b;
+        double a;
+        int c;
+        short d;
+        short f;
+    } B;
+
+    typedef struct C {
+        B bb;
+        short e;
+    } C;
+
+    typedef struct {
+        char  a;
+        short b;
+        char  c;
+        int   d;
+        char  e[3];
+    } T_Test2;
+
+    typedef struct T_MSG {
+        long  ParaA;
+        long  ParaB;
+        short ParaC;
+        char  ParaD;
+        char  Pad;   //填充字节
+    } T_MSG;
+
+#define OFFSET(st, field)     (size_t)&(((st*)0)->field)
+
+    typedef struct {
+        char  a;
+        short b;
+        char  c;
+        double f;
+        int   d;
+        char  e[3];
+    } T_Test;
+
+    printf("size of B = %lu\n", sizeof(B));
+    printf("size of C = %lu\n", sizeof(C));
+    printf("size of T_Test2 = %lu\n", sizeof(T_Test2));
+    printf("size of T_MSG = %lu\n", sizeof(T_MSG));
+
+    printf("Size = %lu\n  a-%lu, b-%lu, c-%lu, d-%lu\n  e[0]-%lu, e[1]-%lu, e[2]-%lu\n  f-%lu\n",
+           sizeof(T_Test), OFFSET(T_Test, a), OFFSET(T_Test, b),
+           OFFSET(T_Test, c), OFFSET(T_Test, d), OFFSET(T_Test, e[0]),
+           OFFSET(T_Test, e[1]), OFFSET(T_Test, e[2]),
+           OFFSET(T_Test, f));
+}

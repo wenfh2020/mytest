@@ -84,6 +84,7 @@ public:
     void TestPointer();
     void TestFork();
     void TestListReverse();
+    void TestByteAlign();
 };
 
 #endif
