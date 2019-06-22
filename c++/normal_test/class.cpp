@@ -46,19 +46,21 @@ void CTest::TestPointer() {
 void CTest::TestFork() {
     printf("test fork!\n");
 
+    int iTest = 0;
     printf("begin fork\n");
     pid_t iPid = fork(); //fork return twice, so..
     if (0 == iPid) {
         //child
-        printf("fork child! pid = %d\n", getpid());
+        printf("fork child! pid = %di, test num = %d\n", getpid(), --iTest);
     } else if (iPid > 0) {
         //parent
-        printf("fork parent! pid = %d\n", getpid());
+        printf("fork parent! pid = %d, test num = %d\n", getpid(), ++iTest);
     } else {
         printf("fork failed!\n");
         return;
     }
-    printf("after fork\n");
+
+    printf("after fork, test num = %d\n", iTest);
 }
 
 void CTest::TestListReverse() {
@@ -124,7 +126,7 @@ void CTest::TestByteAlign() {
         char  Pad;   //填充字节
     } T_MSG;
 
-#define OFFSET(st, field)     (size_t)&(((st*)0)->field)
+#define OFFSET(st, field) (size_t)&(((st*)0)->field)
 
     typedef struct {
         char  a;
@@ -135,12 +137,20 @@ void CTest::TestByteAlign() {
         char  e[3];
     } T_Test;
 
+    typedef struct bs {
+        unsigned a: 4;
+        unsigned : 0 ; /*空域*/
+        char b: 4 ; /*从下一单元开始存放*/
+        unsigned c: 4;
+    } data;
+
     printf("size of B = %lu\n", sizeof(B));
     printf("size of C = %lu\n", sizeof(C));
     printf("size of T_Test2 = %lu\n", sizeof(T_Test2));
     printf("size of T_MSG = %lu\n", sizeof(T_MSG));
+    printf("size of data = %lu\n", sizeof(data));
 
-    printf("Size = %lu\n  a-%lu, b-%lu, c-%lu, d-%lu\n  e[0]-%lu, e[1]-%lu, e[2]-%lu\n  f-%lu\n",
+    printf("size = %lu\n  a-%lu, b-%lu, c-%lu, d-%lu\n  e[1]-%lu, e[1]-%lu, e[2]-%lu\n  f-%lu\n",
            sizeof(T_Test), OFFSET(T_Test, a), OFFSET(T_Test, b),
            OFFSET(T_Test, c), OFFSET(T_Test, d), OFFSET(T_Test, e[0]),
            OFFSET(T_Test, e[1]), OFFSET(T_Test, e[2]),

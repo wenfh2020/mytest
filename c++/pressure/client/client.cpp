@@ -26,8 +26,8 @@ int main(int iArgs, char** ppArgv) {
     int iPort = atoi(ppArgv[2]);
     std::string strIp(ppArgv[1]);
 
-    int iSockFd = socket(AF_INET, SOCK_STREAM, 0);
-    if (-1 == iSockFd) {
+    int iFd = socket(AF_INET, SOCK_STREAM, 0);
+    if (-1 == iFd) {
         printf("socket error = %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
@@ -38,7 +38,18 @@ int main(int iArgs, char** ppArgv) {
     tAddr.sin_port = htons(iPort);
     inet_pton(AF_INET, strIp.c_str(), &tAddr.sin_addr.s_addr);
 
-    if (connect(iSockFd, (struct sockaddr*)(&tAddr), sizeof(struct sockaddr)) == -1) {
+    /*
+    struct linger tLinger;
+    tLinger.l_onoff = 1;
+    tLinger.l_linger = 30;
+    if (setsockopt(iFd, SOL_SOCKET, SO_LINGER,
+                   (const void*)&tLinger, sizeof(struct linger)) == -1) {
+        printf("set socket opt so_linger failed!\n");
+        return 1;
+    }
+    */
+
+    if (connect(iFd, (struct sockaddr*)(&tAddr), sizeof(struct sockaddr)) == -1) {
         printf("connect failed\n");
         exit(EXIT_FAILURE);
     }
@@ -48,18 +59,20 @@ int main(int iArgs, char** ppArgv) {
 
     while (1) {
         fgets(szSendBuf, sizeof(szSendBuf), stdin);
-        send(iSockFd, szSendBuf, strlen(szSendBuf), 0);
+        send(iFd, szSendBuf, strlen(szSendBuf), 0);
         if (strcmp(szSendBuf, "exit\n") == 0) {
             break;
         }
+        //    int iRes = close(iFd);
+        //    printf("close result = %d\n", iRes);
 
-        recv(iSockFd, szRecvBuf, sizeof(szRecvBuf), 0);
-        fputs(szRecvBuf, stdout);
+        //recv(iFd, szRecvBuf, sizeof(szRecvBuf), 0);
+        //fputs(szRecvBuf, stdout);
         memset(szSendBuf, 0, sizeof(szSendBuf));
         memset(szRecvBuf, 0, sizeof(szRecvBuf));
     }
 
-    close(iSockFd);
+    close(iFd);
     exit(EXIT_SUCCESS);
     return 0;
 }
