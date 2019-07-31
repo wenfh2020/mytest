@@ -4,84 +4,52 @@
 #include <stdio.h>
 #include "tlist.h"
 
-class CEmpty {
-};
+class CEmpty {};
 
 class CBase {
-public:
-    CBase() {
-        printf("base()\n");
-    }
-    virtual ~CBase() {
-        printf("~base()\n");
-    }
-    virtual void Func() {
-        printf("base func!\n");
-    }
-    virtual void Func2() {
-        printf("base func2!\n");
-    }
-    void FuncA() {
-        printf("base func a\n");
-    }
+   public:
+    CBase() { printf("base()\n"); }
+    virtual ~CBase() { printf("~base()\n"); }
+    virtual void Func() { printf("base func!\n"); }
+    virtual void Func2() { printf("base func2!\n"); }
+    void FuncA() { printf("base func a\n"); }
 };
 
 class CBase2 {
-public:
-    CBase2() {
-        printf("base2()\n");
-    }
-    virtual ~CBase2() {
-        printf("~base2()\n");
-    }
-    virtual void Func() {
-        printf("base2 func\n");
-    }
+   public:
+    CBase2() { printf("base2()\n"); }
+    virtual ~CBase2() { printf("~base2()\n"); }
+    virtual void Func() { printf("base2 func\n"); }
 };
 
 class CChild : public CBase, public CBase2 {
-public:
-    CChild() {
-        printf("child()\n");
-    }
-    virtual ~CChild() {
-        printf("~child()\n");
-    }
-    virtual void Func2() {
-        printf("child func2\n");
-    }
-    virtual void Func3() {
-        printf("child func3\n");
-    }
+   public:
+    CChild() { printf("child()\n"); }
+    virtual ~CChild() { printf("~child()\n"); }
+    virtual void Func2() { printf("child func2\n"); }
+    virtual void Func3() { printf("child func3\n"); }
 };
 
 class CChild2 : public CChild {
-public:
-    CChild2() {
-        printf("child2()\n");
-    }
-    virtual ~CChild2() {
-        printf("~child2()\n");
-    }
-    virtual void Func() {//delete virtual key, it work!
+   public:
+    CChild2() { printf("child2()\n"); }
+    virtual ~CChild2() { printf("~child2()\n"); }
+    virtual void Func() {  // delete virtual key, it work!
         printf("child2 func\n");
     }
-    virtual void Func3() {
-        printf("child2 fun3\n");
-    }
-    void FuncA() {
-        printf("child2 func a\n");
-    }
+    virtual void Func3() { printf("child2 fun3\n"); }
+    void FuncA() { printf("child2 func a\n"); }
 };
 
 class CTest {
-public:
+   public:
     CTest() {}
     virtual ~CTest() {}
 
-public:
+   public:
     void TestVirtual();
     void TestPointer();
+    void TestPointer2();
     void TestFork();
     void TestListReverse();
     void TestByteAlign();

@@ -2,8 +2,8 @@
  * c/c++ test code.
  */
 #include <stdio.h>
-#include <iostream>
 #include <string.h>
+#include <iostream>
 #include "class.h"
 
 #define HELP_INFO "-virtual\n-pointer\n-fork\n-list\n-align\n"
@@ -12,7 +12,7 @@ void Help();
 void PrintArgs(int iArgs, char** ppArgv);
 
 int main(int iArgs, char** ppArgv) {
-    //PrintArgs(iArgs, ppArgv);
+    // PrintArgs(iArgs, ppArgv);
     if (iArgs != 2) {
         printf("please input arg!\n");
         return 1;
@@ -27,6 +27,7 @@ int main(int iArgs, char** ppArgv) {
         oTest.TestVirtual();
     } else if (strArgv == "pointer") {
         oTest.TestPointer();
+        oTest.TestPointer2();
     } else if (strArgv == "fork") {
         oTest.TestFork();
     } else if (strArgv == "list") {
@@ -48,6 +49,4 @@ void PrintArgs(int iArgs, char** ppArgv) {
     }
 }
 
-void Help() {
-    printf("%s", HELP_INFO);
-}
+void Help() { printf("%s", HELP_INFO); }
